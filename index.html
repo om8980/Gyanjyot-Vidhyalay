@@ -322,8 +322,8 @@ async function doLogin() {
 }
 
 async function detectRole() {
-  // Check if admin (by email convention: admin@school.com)
-  if (currentUser.email.startsWith('admin')) {
+  const { data: teacherData } = await sb.from('teachers').select('*, classes(*)').eq('email', currentUser.email).single();
+  if (teacherData && teacherData.is_admin) {
     currentRole = 'admin';
     showPage('admin-page');
     document.getElementById('nav-role').textContent = 'Admin';
