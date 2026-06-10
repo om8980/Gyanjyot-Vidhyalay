@@ -1,9 +1,3 @@
-bash
-
-sed -i 's/async function detectRole() {/async function detectRole() {\n  console.log("Detecting role for:", currentUser.email);/' /mnt/user-data/outputs/index.html
-
-# Create completely new fixed version
-cat > /mnt/user-data/outputs/index.html << 'HTMLEOF'
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -221,10 +215,10 @@ cat > /mnt/user-data/outputs/index.html << 'HTMLEOF'
 </div>
 
 <script>
-const SUPABASE_URL = 'APNA_SUPABASE_URL_YAHAN_LIKHO';
-const SUPABASE_KEY = 'APNI_ANON_KEY_YAHAN_LIKHO';
-const GEMINI_KEY   = 'APNI_GEMINI_KEY_YAHAN_LIKHO';
-const ADMIN_EMAILS = ['APNI_ASLI_EMAIL_YAHAN_LIKHO'];
+const SUPABASE_URL = 'https://xzpgwtrctmkbxslqnaqn.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'sb_publishable_wRwj0zE8H1rOtmrGCt98oQ_v9OjHSPP';
+const GEMINI_KEY   = 'AQ.Ab8RN6LGcJ2_YGpArueE6vmQV9LYGjgAvP8_GwZnjlYXJ9qxKw';
+const ADMIN_EMAILS = ['omvaniya228@gmail.com'];
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser=null, currentRole=null, currentTeacherClass=null, selectedClassId=null, chartInstance=null, backPage='admin-page';
@@ -486,11 +480,3 @@ async function generateAI(name,marks,pct,grade){
 </script>
 </body>
 </html>
-HTMLEOF
-echo "Done"
-Output
-
-Done
-Done
-
-You are out of free messages until 2:40 AM
