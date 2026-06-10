@@ -220,7 +220,19 @@ const SUPABASE_KEY = 'sb_secret_jjafiFdNV6aFPFgQi_l9oA_cQaC8Spg';
 const GEMINI_KEY   = 'AQ.Ab8RN6LGcJ2_YGpArueE6vmQV9LYGjgAvP8_GwZnjlYXJ9qxKw';
 const ADMIN_EMAILS = ['omvaniya228@gmail.com'];
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false
+  },
+  global: {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY
+    }
+  }
+});
 let currentUser=null, currentRole=null, currentTeacherClass=null, selectedClassId=null, chartInstance=null, backPage='admin-page';
 
 async function doLogin(){
