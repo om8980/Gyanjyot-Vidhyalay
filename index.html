@@ -59,7 +59,7 @@
     .sug-text { font-size: 13px; color: #333; line-height: 1.6; }
     .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; }
     .alert-error { background: #fff0f0; color: #c0392b; border: 1px solid #f5c6cb; }
-    .alert-success { background: #f0fff4; color: #1a7f5a; border: 1px solid #c3e6cb; }
+    .grade-box { display: inline-block; padding: 4px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; }
     @media (max-width: 600px) {
       .stats-grid { grid-template-columns: 1fr 1fr; }
       .marks-grid { grid-template-columns: 1fr; }
@@ -76,26 +76,18 @@
   <button id="logout-btn" onclick="logout()">Logout</button>
 </nav>
 
-<!-- LOGIN -->
 <div id="login-page" class="page active">
   <div class="login-box">
     <div class="school-logo">🏫</div>
     <h2>Result System</h2>
     <p>Teacher ya Admin login karein</p>
     <div id="login-error" class="alert alert-error" style="display:none"></div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="aapki@email.com" />
-    </div>
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" id="login-password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()" />
-    </div>
+    <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="aapki@email.com" /></div>
+    <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()" /></div>
     <button class="btn btn-primary" id="login-btn" onclick="doLogin()">Login Karein</button>
   </div>
 </div>
 
-<!-- ADMIN PAGE -->
 <div id="admin-page" class="page">
   <div class="tabs">
     <div class="tab active" onclick="adminTab('classes')">Classes</div>
@@ -162,7 +154,6 @@
   </div>
 </div>
 
-<!-- TEACHER PAGE -->
 <div id="teacher-page" class="page">
   <div class="tabs">
     <div class="tab active" onclick="teacherTab('entry')">Marks Entry</div>
@@ -189,7 +180,6 @@
   </div>
 </div>
 
-<!-- RESULT PAGE -->
 <div id="result-page" class="page">
   <button onclick="goBack()" style="background:none;border:none;cursor:pointer;color:#1e3a5f;font-size:14px;margin-bottom:16px">← Wapas jaao</button>
   <div class="card">
@@ -214,13 +204,11 @@
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-// ===================== FIREBASE CONFIG =====================
 const firebaseConfig = {
   apiKey: "AIzaSyCekAJ5sq2QvWunUYGb7DEpm6C6emC3JSU",
   authDomain: "school-2026ai.firebaseapp.com",
@@ -231,15 +219,26 @@ const firebaseConfig = {
 };
 const ADMIN_EMAIL = "omvaniya228@gmail.com";
 const GEMINI_KEY = "AQ.Ab8RN6Kifb7yc-MmDH6vRhXpcFeePryHgkwXzhwakZBhTxkjQw";
-// ==========================================================
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let currentUser = null, currentRole = null, currentTeacherClass = null, selectedClassId = null, chartInstance = null, backPage = 'admin-page';
+let currentUser=null, currentRole=null, currentTeacherClass=null, selectedClassId=null, chartInstance=null, backPage='admin-page';
 
-// ---- LOGIN ----
+// ===================== GRADE FUNCTION (FIX 3) =====================
+function getGrade(pct) {
+  if(pct >= 90) return { grade: 'A+', color: '#1a7f5a', bg: '#e6f9f2' };
+  if(pct >= 80) return { grade: 'A',  color: '#1a7f5a', bg: '#e6f9f2' };
+  if(pct >= 70) return { grade: 'B+', color: '#2471a3', bg: '#eaf4fb' };
+  if(pct >= 60) return { grade: 'B',  color: '#2471a3', bg: '#eaf4fb' };
+  if(pct >= 50) return { grade: 'C+', color: '#d68910', bg: '#fef9e7' };
+  if(pct >= 40) return { grade: 'C',  color: '#d68910', bg: '#fef9e7' };
+  if(pct >= 33) return { grade: 'D',  color: '#e67e22', bg: '#fef5e4' };
+  return { grade: 'F', color: '#c0392b', bg: '#fff0f0' };
+}
+
+// ===================== AUTH =====================
 window.doLogin = async function() {
   const email = document.getElementById('login-email').value.trim();
   const pass = document.getElementById('login-password').value;
@@ -293,7 +292,6 @@ window.logout = async function() {
   document.getElementById('nav-role').textContent = '';
 }
 
-// ---- NAVIGATION ----
 function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
 window.adminTab = function(name) {
@@ -313,7 +311,7 @@ window.teacherTab = function(name) {
 
 window.goBack = function() { showPage(backPage); }
 
-// ---- ADMIN DATA ----
+// ===================== ADMIN =====================
 async function loadAdminData() { await loadClassesList(); await populateClassDropdowns(); }
 
 async function loadClassesList() {
@@ -336,7 +334,7 @@ window.addClass = async function() {
 
 window.openSubjects = function(classId, className) {
   selectedClassId = classId;
-  document.getElementById('subjects-title').textContent = className + ' — Subjects';
+  document.getElementById('subjects-title').textContent = className.trim() + ' — Subjects';
   document.getElementById('subjects-card').style.display = 'block';
   loadSubjectsList();
 }
@@ -346,7 +344,8 @@ async function loadSubjectsList() {
   const snap = await getDocs(q);
   const el = document.getElementById('subjects-list');
   if(snap.empty) { el.innerHTML = '<p style="color:#888;font-size:13px">Koi subject nahi abhi.</p>'; return; }
-  el.innerHTML = '<table><thead><tr><th>Subject</th><th>Max Marks</th></tr></thead><tbody>' + snap.docs.map(d => `<tr><td>${d.data().name}</td><td>${d.data().maxMarks}</td></tr>`).join('') + '</tbody></table>';
+  el.innerHTML = '<table><thead><tr><th>Subject</th><th>Max Marks</th></tr></thead><tbody>' +
+    snap.docs.map(d => `<tr><td>${d.data().name}</td><td>${d.data().maxMarks}</td></tr>`).join('') + '</tbody></table>';
 }
 
 window.addSubject = async function() {
@@ -359,7 +358,6 @@ window.addSubject = async function() {
   loadSubjectsList();
 }
 
-// ---- TEACHERS ----
 window.addTeacher = async function() {
   const name = document.getElementById('t-name').value.trim();
   const email = document.getElementById('t-email').value.trim();
@@ -370,7 +368,7 @@ window.addTeacher = async function() {
   msg.textContent = 'Teacher add ho raha hai...'; msg.style.color = '#555';
   try {
     await createUserWithEmailAndPassword(auth, email, pass);
-    await signInWithEmailAndPassword(auth, ADMIN_EMAIL, prompt('Admin password daalo dobara:'));
+    await signInWithEmailAndPassword(auth, ADMIN_EMAIL, document.getElementById('login-password').value);
   } catch(e) {}
   await addDoc(collection(db, 'teachers'), { name, email, classId: classId||null });
   msg.textContent = '✓ Teacher add ho gaya!'; msg.style.color = 'green';
@@ -389,7 +387,6 @@ async function loadTeachersList() {
     snap.docs.map(d => `<tr><td>${d.data().name}</td><td>${d.data().email}</td><td>${d.data().classId ? classes[d.data().classId]||'—' : '—'}</td></tr>`).join('') + '</tbody></table>';
 }
 
-// ---- STUDENTS ----
 window.addStudent = async function() {
   const name = document.getElementById('s-name').value.trim();
   const roll = document.getElementById('s-roll').value.trim();
@@ -433,7 +430,7 @@ window.loadClassResults = async function() {
     snap.docs.map(d => `<tr><td>${d.data().name}</td><td>${d.data().rollNumber||'—'}</td><td><button class="btn btn-sm" style="background:#1e3a5f;color:white;border:none;cursor:pointer" onclick="viewResult('${d.id}','${d.data().name}','admin-page')">Result Dekho</button></td></tr>`).join('') + '</tbody></table>';
 }
 
-// ---- TEACHER ----
+// ===================== TEACHER =====================
 async function loadTeacherData() {
   const q = query(collection(db, 'students'), where('classId', '==', currentTeacherClass));
   const snap = await getDocs(q);
@@ -447,8 +444,18 @@ window.loadStudentSubjects = async function() {
   const q = query(collection(db, 'subjects'), where('classId', '==', currentTeacherClass));
   const snap = await getDocs(q);
   if(snap.empty) { document.getElementById('marks-entry-area').innerHTML = '<p style="color:#c0392b">Subjects set nahi hain. Admin se contact karein.</p>'; return; }
+
+  // FIX 1: Har student ke existing marks load karo
+  const examType = document.getElementById('exam-type').value;
+  const existingMarks = {};
+  for(const subDoc of snap.docs) {
+    const markDocId = `${studentId}_${subDoc.id}_${examType}`;
+    const markSnap = await getDoc(doc(db, 'marks', markDocId));
+    if(markSnap.exists()) existingMarks[subDoc.id] = markSnap.data().marksObtained;
+  }
+
   document.getElementById('marks-entry-area').innerHTML = '<div class="marks-grid">' +
-    snap.docs.map(d => `<div class="subject-mark"><label>${d.data().name}<br><small style="color:#888">Max: ${d.data().maxMarks}</small></label><input type="number" id="mark-${d.id}" min="0" max="${d.data().maxMarks}" placeholder="Marks" /></div>`).join('') + '</div>';
+    snap.docs.map(d => `<div class="subject-mark"><label>${d.data().name}<br><small style="color:#888">Max: ${d.data().maxMarks}</small></label><input type="number" id="mark-${d.id}" min="0" max="${d.data().maxMarks}" value="${existingMarks[d.id]!==undefined ? existingMarks[d.id] : ''}" placeholder="Marks" /></div>`).join('') + '</div>';
   document.getElementById('save-marks-btn').style.display = 'block';
 }
 
@@ -462,8 +469,15 @@ window.saveMarks = async function() {
     if(inp.value === '') continue;
     const subjectId = inp.id.replace('mark-','');
     const num = parseInt(inp.value);
+    // FIX 1: studentId + subjectId + examType milake unique ID banate hain
     const docId = `${studentId}_${subjectId}_${examType}`;
-    await setDoc(doc(db, 'marks', docId), { studentId, subjectId, marksObtained: num, examType });
+    await setDoc(doc(db, 'marks', docId), {
+      studentId,
+      subjectId,
+      marksObtained: num,
+      examType,
+      updatedAt: new Date()
+    });
   }
   msg.textContent = '✓ Marks successfully save ho gaye!'; msg.style.color = 'green';
 }
@@ -477,56 +491,116 @@ async function loadTeacherResults() {
     snap.docs.map(d => `<tr><td>${d.data().name}</td><td>${d.data().rollNumber||'—'}</td><td><button class="btn btn-sm" style="background:#1e3a5f;color:white;border:none;cursor:pointer" onclick="viewResult('${d.id}','${d.data().name}','teacher-page')">Dekho</button></td></tr>`).join('') + '</tbody></table>';
 }
 
-// ---- RESULT VIEW ----
+// ===================== RESULT VIEW =====================
 window.viewResult = async function(studentId, studentName, back) {
   backPage = back; showPage('result-page');
   document.getElementById('res-name').textContent = studentName;
   document.getElementById('res-avatar').textContent = studentName.charAt(0).toUpperCase();
+  document.getElementById('res-bars').innerHTML = '<p style="color:#888">Marks load ho rahe hain...</p>';
+
+  // FIX 1: Sirf us student ke marks fetch karo
   const q = query(collection(db, 'marks'), where('studentId', '==', studentId));
   const marksSnap = await getDocs(q);
-  if(marksSnap.empty) { document.getElementById('res-bars').innerHTML = '<p style="color:#888">Marks abhi enter nahi hue hain.</p>'; return; }
+
+  if(marksSnap.empty) {
+    document.getElementById('res-bars').innerHTML = '<p style="color:#888">Is student ke marks abhi enter nahi hue hain.</p>';
+    document.getElementById('res-total').textContent = '—';
+    document.getElementById('res-percent').textContent = '—';
+    document.getElementById('res-grade').textContent = '—';
+    document.getElementById('res-ai').innerHTML = '<p style="color:#888">Pehle marks enter karein.</p>';
+    return;
+  }
+
   const marksData = [];
   for(const m of marksSnap.docs) {
     const subDoc = await getDoc(doc(db, 'subjects', m.data().subjectId));
-    if(subDoc.exists()) marksData.push({ name: subDoc.data().name, maxMarks: subDoc.data().maxMarks, obtained: m.data().marksObtained });
+    if(subDoc.exists()) {
+      marksData.push({
+        name: subDoc.data().name,
+        maxMarks: subDoc.data().maxMarks,
+        obtained: m.data().marksObtained
+      });
+    }
   }
+
+  if(marksData.length === 0) {
+    document.getElementById('res-bars').innerHTML = '<p style="color:#888">Marks load nahi hue.</p>';
+    return;
+  }
+
   const total = marksData.reduce((s,m) => s+m.obtained, 0);
   const maxTotal = marksData.reduce((s,m) => s+m.maxMarks, 0);
   const pct = Math.round((total/maxTotal)*100);
-  const grade = pct>=90?'A+':pct>=75?'A':pct>=60?'B':pct>=45?'C':'D';
-  const gc = pct>=75?'#1a7f5a':pct>=45?'#e67e22':'#c0392b';
+
+  // FIX 3: Sahi grade system
+  const gradeInfo = getGrade(pct);
+
   document.getElementById('res-total').textContent = total+'/'+maxTotal;
   document.getElementById('res-percent').textContent = pct+'%';
-  document.getElementById('res-grade').textContent = grade;
-  document.getElementById('res-grade').style.color = gc;
+  document.getElementById('res-grade').textContent = gradeInfo.grade;
+  document.getElementById('res-grade').style.color = gradeInfo.color;
+
+  // Grade table bhi dikhao
+  const gradeTable = `
+    <div style="margin-top:12px;padding:10px;background:#f8f9fc;border-radius:8px;font-size:12px;color:#555">
+      <b>Grade System:</b> A+(90%+) | A(80-89%) | B+(70-79%) | B(60-69%) | C+(50-59%) | C(40-49%) | D(33-39%) | F(33% se kam)
+    </div>`;
+
   document.getElementById('res-bars').innerHTML = marksData.map(m => {
     const p = Math.round((m.obtained/m.maxMarks)*100);
-    const c = p>=75?'#1a7f5a':p>=45?'#e67e22':'#c0392b';
-    return `<div class="bar-row"><span class="bar-label">${m.name}</span><div class="bar-bg"><div class="bar-fill" style="width:${p}%;background:${c}"></div></div><span class="bar-score" style="color:${c}">${m.obtained}</span></div>`;
-  }).join('');
+    const gi = getGrade(p);
+    return `<div class="bar-row">
+      <span class="bar-label">${m.name}</span>
+      <div class="bar-bg"><div class="bar-fill" style="width:${p}%;background:${gi.color}"></div></div>
+      <span class="bar-score" style="color:${gi.color}">${m.obtained}</span>
+      <span class="grade-box" style="background:${gi.bg};color:${gi.color};font-size:11px;padding:2px 6px;border-radius:4px">${gi.grade}</span>
+    </div>`;
+  }).join('') + gradeTable;
+
   if(chartInstance) chartInstance.destroy();
   chartInstance = new Chart(document.getElementById('res-chart'), {
     type: 'bar',
-    data: { labels: marksData.map(m=>m.name), datasets: [{ label: 'Marks', data: marksData.map(m=>m.obtained), backgroundColor: marksData.map(m=>{ const p=Math.round((m.obtained/m.maxMarks)*100); return p>=75?'#1a7f5a99':p>=45?'#e67e2299':'#c0392b99'; }), borderRadius: 6 }] },
+    data: {
+      labels: marksData.map(m=>m.name),
+      datasets: [{
+        label: 'Marks',
+        data: marksData.map(m=>m.obtained),
+        backgroundColor: marksData.map(m=>{ const gi=getGrade(Math.round((m.obtained/m.maxMarks)*100)); return gi.color+'99'; }),
+        borderColor: marksData.map(m=>{ const gi=getGrade(Math.round((m.obtained/m.maxMarks)*100)); return gi.color; }),
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
     options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100 } } }
   });
-  generateAI(studentName, marksData, pct, grade);
+
+  generateAI(studentName, marksData, pct, gradeInfo.grade);
 }
 
+// FIX 2: Naya Gemini model use karo
 async function generateAI(name, marks, pct, grade) {
   const aiEl = document.getElementById('res-ai');
   aiEl.innerHTML = '<div style="color:#555;font-size:13px">AI suggestions taiyar ho rahi hain...</div>';
-  const prompt = `Student "${name}" ke marks: ${marks.map(m=>`${m.name}: ${m.obtained}/${m.maxMarks}`).join(', ')}. Percentage: ${pct}%, Grade: ${grade}. Ek friendly Indian teacher ki tarah simple Hindi mein 3-4 suggestions do.`;
+  const prompt = `Tu ek friendly Indian school teacher hai. Student "${name}" ke yeh marks hain:\n${marks.map(m=>`${m.name}: ${m.obtained}/${m.maxMarks} (${Math.round((m.obtained/m.maxMarks)*100)}%)`).join('\n')}\nKul percentage: ${pct}%, Grade: ${grade}\n\nSimple Hindi mein 4-5 suggestions do:\n1. Weak subjects ke liye specific tips\n2. Strong subjects ke liye encouragement\n3. Overall ek motivational line\nShort aur helpful rakho.`;
+
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_KEY}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+    // FIX 2: gemini-1.5-flash model use karo
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    aiEl.innerHTML = text.split('\n').filter(l=>l.trim()).map(l => `<div class="suggestion-item"><div class="sug-dot"></div><div class="sug-text">${l.replace(/^\*+\s*/,'')}</div></div>`).join('');
+    if(text) {
+      aiEl.innerHTML = text.split('\n').filter(l=>l.trim()).map(l =>
+        `<div class="suggestion-item"><div class="sug-dot"></div><div class="sug-text">${l.replace(/^\*+\s*|\d+\.\s*/g,'')}</div></div>`
+      ).join('');
+    } else {
+      aiEl.innerHTML = '<div class="sug-text" style="color:#888">AI response nahi aaya. Gemini key check karein.</div>';
+    }
   } catch(e) {
-    aiEl.innerHTML = '<div class="sug-text" style="color:#888">AI suggestion abhi available nahi.</div>';
+    aiEl.innerHTML = '<div class="sug-text" style="color:#888">AI suggestion abhi available nahi. Internet check karein.</div>';
   }
 }
 </script>
