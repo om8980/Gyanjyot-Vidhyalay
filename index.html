@@ -218,7 +218,8 @@ const firebaseConfig = {
   appId: "1:581992686538:web:dc08faa0197d6b39b26533"
 };
 const ADMIN_EMAIL = "omvaniya228@gmail.com";
-const GEMINI_KEY = "AQ.Ab8RN6Ii4eLFZf3sWve_fEihMpsl_Rwk9CWjHvxZdbiXL5CRTQ";
+// NOTE: Gemini key yahan se hata di gayi hai. Ab yeh sirf server (api/generate-suggestions.js) ke
+// environment variable me rahegi, browser ke code me kabhi nahi aayegi.
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -577,30 +578,27 @@ window.viewResult = async function(studentId, studentName, back) {
   generateAI(studentName, marksData, pct, gradeInfo.grade);
 }
 
-// FIX 2: Naya Gemini model use karo
+// FIX 4: Gemini ko ab seedha browser se nahi, apne Vercel server function ke through call karte hain.
+// Isse API key kabhi browser/GitHub me expose nahi hogi.
 async function generateAI(name, marks, pct, grade) {
   const aiEl = document.getElementById('res-ai');
   aiEl.innerHTML = '<div style="color:#555;font-size:13px">AI suggestions taiyar ho rahi hain...</div>';
   const prompt = `Tu ek friendly Indian school teacher hai. Student "${name}" ke yeh marks hain:\n${marks.map(m=>`${m.name}: ${m.obtained}/${m.maxMarks} (${Math.round((m.obtained/m.maxMarks)*100)}%)`).join('\n')}\nKul percentage: ${pct}%, Grade: ${grade}\n\nSimple Hindi mein 4-5 suggestions do:\n1. Weak subjects ke liye specific tips\n2. Strong subjects ke liye encouragement\n3. Overall ek motivational line\nShort aur helpful rakho.`;
 
   try {
-    // FIX 2: gemini-1.5-flash model use karo
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`, {
+    const res = await fetch('/api/generate-suggestions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': GEMINI_KEY
-      },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
     });
     const data = await res.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const text = data.text || '';
     if(text) {
       aiEl.innerHTML = text.split('\n').filter(l=>l.trim()).map(l =>
         `<div class="suggestion-item"><div class="sug-dot"></div><div class="sug-text">${l.replace(/^\*+\s*|\d+\.\s*/g,'')}</div></div>`
       ).join('');
     } else {
-      aiEl.innerHTML = '<div class="sug-text" style="color:#888">AI response nahi aaya. Gemini key check karein.</div>';
+      aiEl.innerHTML = '<div class="sug-text" style="color:#888">AI response nahi aaya. ' + (data.error || 'Server check karein.') + '</div>';
     }
   } catch(e) {
     aiEl.innerHTML = '<div class="sug-text" style="color:#888">AI suggestion abhi available nahi. Internet check karein.</div>';
